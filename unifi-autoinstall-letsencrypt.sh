@@ -33,7 +33,7 @@ echo "#############################"
 echo "Updating your system"
 echo "#############################"
 sleep 2
-apt-get update && apt-get upgrade -y
+apt-get update && apt-get upgrade -y && sudo apt-get install ca-certificates apt-transport-https htop screen mc -y
 clear
 
 # Create firewall rules
@@ -47,8 +47,10 @@ iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 6789 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 8443 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 8880 -j ACCEPT
 iptables -A INPUT -p udp --dport 3478 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 8843 -j ACCEPT
 iptables -A INPUT -j DROP
@@ -87,10 +89,10 @@ echo "#############################"
 echo "Installing Ubiquiti UniFi Controller"
 echo "#############################"
 sleep 2
-wget -O /etc/apt/trusted.gpg.d/unifi-repo.gpg https://dl.ubnt.com/unifi/unifi-repo.gpg 
-echo 'deb http://www.ubnt.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
+wget -O /etc/apt/trusted.gpg.d/unifi-repo.gpg https://dl.ui.com/unifi/unifi-repo.gpg 
+echo 'deb http://www.ui.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
 apt-get update && apt-get install unifi -y
-clear
+#clear
 
 # Install Let's Encrypt
 echo "#############################"
