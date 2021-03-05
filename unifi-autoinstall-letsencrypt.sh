@@ -32,109 +32,111 @@ clear
 echo "#############################"
 echo "Updating your system"
 echo "#############################"
-sleep 2
-apt-get update && apt-get upgrade -y
-clear
+sleep 5
+apt-get update && apt-get upgrade -y && sudo apt-get install ca-certificates apt-transport-https htop screen mc -y
+#clear
 
 # Create firewall rules
 echo "#############################"
 echo "Creating Firewall Rules"
 echo "#############################"
-sleep 2
+sleep 10
 iptables -t nat -I PREROUTING -p tcp --dport 443 -j REDIRECT --to-ports 8443
 iptables -A INPUT -i eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 6789 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 8443 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 8880 -j ACCEPT
 iptables -A INPUT -p udp --dport 3478 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 8843 -j ACCEPT
 iptables -A INPUT -j DROP
 iptables -A OUTPUT -o eth0 -j ACCEPT
-clear
+#clear
 
 # Install Firewall persistence - source: https://gist.github.com/alonisser/a2c19f5362c2091ac1e7
 echo "#############################"
 echo "Configuring Firewall Persistence"
 echo "#############################"
-sleep 2
+sleep 10
 echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
 echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
 apt-get install iptables-persistent netfilter-persistent -y
-clear
+#clear
 
 # Save firewall rules
 echo "#############################"
 echo "Saving Firewall rules"
 echo "#############################"
-sleep 2
+sleep 10
 netfilter-persistent save
-clear
+#clear
 
 # Configure the hostname
 echo "#############################"
 echo "Setting system hostname"
 echo "#############################"
-sleep 2
+sleep 10
 hostname $HOSTNAME
 hostnamectl set-hostname $HOSTNAME
-clear
+#clear
 
 # Install Ubiquiti Unifi
 echo "#############################"
 echo "Installing Ubiquiti UniFi Controller"
 echo "#############################"
-sleep 2
-wget -O /etc/apt/trusted.gpg.d/unifi-repo.gpg https://dl.ubnt.com/unifi/unifi-repo.gpg 
-echo 'deb http://www.ubnt.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
+sleep 10
+wget -O /etc/apt/trusted.gpg.d/unifi-repo.gpg https://dl.ui.com/unifi/unifi-repo.gpg 
+echo 'deb http://www.ui.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
 apt-get update && apt-get install unifi -y
-clear
+#clear
 
 # Install Let's Encrypt
 echo "#############################"
 echo "Installing Let's Encrypt"
 echo "#############################"
-sleep 2
+sleep 10
 apt-get install letsencrypt -y
-clear
+#clear
 
 # Setup LetsEncrypt certificate
 echo "#############################"
 echo "Setting up LetsEncrypt Certificate"
 echo "#############################"
-sleep 2
+sleep 10
 wget -O /opt/gen-unifi-cert.sh https://source.sosdg.org/brielle/lets-encrypt-scripts/raw/master/gen-unifi-cert.sh
 sed -i 's/--agree-tos --standalone --preferred-challenges tls-sni/--agree-tos --standalone/g' /opt/gen-unifi-cert.sh
 chmod +x /opt/gen-unifi-cert.sh
 /opt/gen-unifi-cert.sh -e $EMAIL -d $HOSTNAME
-clear
+#clear
 
 # Create crontab for LetsEncrypt
 echo "#############################"
 echo "Update LetsEncrypt Certificate on a schedule"
 echo "#############################"
-sleep 2
+sleep 10
 crontab -l > /tmp/letsencryptcron
 echo "23 1,13 * * * /opt/gen-unifi-cert.sh -r -d $HOSTNAME" >> /tmp/letsencryptcron
 crontab /tmp/letsencryptcron
 rm /tmp/letsencryptcron
-clear
+#clear
 
 # Install Nginx
 echo "#############################"
 echo "Installing Nginx"
 echo "#############################"
-sleep 2
+sleep 10
 apt-get install nginx-light -y
-clear
+#clear
 
 # Configure Nginx to forward 80 to 443
 echo "#############################"
 echo "Configuring Nginx to forward HTTP to HTTPS"
 echo "#############################"
-sleep 2
+sleep 10
 echo "server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -143,13 +145,13 @@ echo "server {
 }" > /etc/nginx/sites-available/redirect
 ln -s /etc/nginx/sites-available/redirect /etc/nginx/sites-enabled/
 rm /etc/nginx/sites-enabled/default
-clear
+#clear
 
 # Install fail2ban
 echo "#############################"
 echo "Installing and Configuring Fail2ban"
 echo "#############################"
-sleep 2
+sleep 10
 apt-get install fail2ban -y
 
 # Copy config Fail2ban config files to preserve overwriting changes during Fail2ban upgrades.
@@ -165,13 +167,13 @@ sudo echo -e '\n[ubiquiti]\nenabled  = true\nfilter   = ubiquiti\nlogpath  = /us
 
 # Restart Fail2ban to apply changes above.
 service fail2ban restart
-clear
+#clear
 
 # Restart services
 echo "#############################"
 echo "Restarting Services"
 echo "#############################"
-sleep 2
+sleep 10
 systemctl restart nginx
 systemctl restart unifi
 
